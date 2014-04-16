@@ -179,26 +179,32 @@
 				totalLines = textLines.length;
 			
 			map(textLines, function(text, line) {
+				var attrs = reduce(
+					node.attrs,
+					function(initial, value, name) {
+						if ( name !== 'text' && name !== 'w' && name !== 'h' ) {
+							if ( name === 'font-size') value = parseInt(value) + 'px';
+
+							if( name === 'stroke'){
+								value = convertToHexColor(value);
+							}
+							
+							initial[name] = escapeXML(value.toString());
+						}
+
+						return initial;
+					},
+					{ style: styleToString(style) + ';' }
+				);
+				/**
+				 * if text node has a class set, apply it to the attrs object
+				*/
+				if (node.node.className.baseVal != "") {
+					attrs.class = node.node.className.baseVal;
+				}
                 tags.push(tag(
 					'text',
-					reduce(
-						node.attrs,
-						function(initial, value, name) {
-							if ( name !== 'text' && name !== 'w' && name !== 'h' ) {
-								if ( name === 'font-size') value = parseInt(value) + 'px';
-
-								if( name === 'stroke'){
-									value = convertToHexColor(value);
-								}
-								
-								initial[name] = escapeXML(value.toString());
-								
-							}
-
-							return initial;
-						},
-						{ style: styleToString(style) + ';' }
-						),
+					attrs,
 					node.matrix,
 					tag('tspan', { dy: computeTSpanDy(style.font.size, line + 1, totalLines) }, null, text.replace(/&/g, "&amp;"))
 				));
@@ -265,6 +271,24 @@
 				var value = '';
 
 				switch ( i ) {
+					case 'r':
+						// see https://github.com/ElbertF/Raphael.Export/issues/40
+						if (node.type != "rect") {
+							break;
+						}
+						
+						/**
+						 * set 'rx' and 'ry' to 'r'
+						*/
+						value = node.attrs.r;
+						node.attrs.rx = value;
+						node.attrs.ry = value;
+						
+						/**
+						 * skip adding the 'r' attribute
+						*/
+						continue;
+					
 					case 'src':
 						name = 'xlink:href';
 
@@ -377,6 +401,13 @@
 					else
 						attrs += ' ' + name + '="' + escapeXML(node.attrs[i].toString()) + '"';
 				}
+			}
+
+			/**
+			 * if node has a class set, append it to the attrs string
+		    */
+			if (node.node.className.baseVal != "") {
+				attrs += ' ' + 'class="' + node.node.className.baseVal + '"';
 			}
 
 			svg += '<' + node.type + ' transform="matrix(' + node.matrix.toString().replace(/^matrix\(|\)$/g, '') + ')"' + attrs + '></' + node.type + '>';
