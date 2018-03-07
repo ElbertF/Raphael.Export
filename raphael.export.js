@@ -20,7 +20,7 @@
 		// couldn't be converted to a string.  In this case, a JavaScript error
 		// will be thrown, and our catch block will return an empty string.
 		try {
-			var replace = { '<': 'lt', '>': 'gt', '"': 'quot', '\'': 'apos' };
+			var replace = { '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot', '\'': 'apos' };
 
 			// Ensure s is a string, by converting it using toString(), if possible.
 			// If this method doesn't exist, then an error will be thrown and our
