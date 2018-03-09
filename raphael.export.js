@@ -15,13 +15,29 @@
 	function escapeXML(s) {
 		if ( typeof s === 'number' ) return s.toString();
 
-		var replace = { '<': 'lt', '>': 'gt', '"': 'quot', '\'': 'apos' };
+		// We wrap the check in a try/catch block.  If an error occurs then the
+		// function was passed a non-string value or a value that otherwise
+		// couldn't be converted to a string.  In this case, a JavaScript error
+		// will be thrown, and our catch block will return an empty string.
+		try {
+			var replace = { '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot', '\'': 'apos' };
 
-		for ( var entity in replace ) {
-			s = s.replace(new RegExp(entity, 'g'), '&' + replace[entity] + ';');
+			// Ensure s is a string, by converting it using toString(), if possible.
+			// If this method doesn't exist, then an error will be thrown and our
+			// catch block will return an empty string.
+			// Note that (perhaps, surprisingly) string values have a toString()
+			// function, so we don't need to check the type before calling.
+			s = s.toString();
+
+			for ( var entity in replace ) {
+				s = s.replace(new RegExp(entity, 'g'), '&' + replace[entity] + ';');
+			}
+
+			return s;
+
+		} catch ( e ) {
+			return "";
 		}
-
-		return s;
 	}
 
 	/**
